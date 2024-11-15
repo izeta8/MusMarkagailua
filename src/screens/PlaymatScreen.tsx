@@ -117,7 +117,6 @@ const Quarter = ({index, individualScore, setIndividualScore}) => {
   // ----------------------- //
 
   const onTap = () => {
-    console.log('TAPPED');
     increaseQuarterScore();
   }
 
@@ -157,6 +156,7 @@ const Quarter = ({index, individualScore, setIndividualScore}) => {
           {quarterScore !== undefined && <Chickpea source={chickpeak_images[quarterScore]} /> }
         </Tap>
         {/* <Text style={{textAlign:'center', position: 'absolute'}}>{index}</Text> */}
+        <QuarterValueText index={index}>{isSinglePointQuarter(index) ? '1' : '5'}</QuarterValueText>
       </GestureRecognizer>
     </QuarterElement>
   )
@@ -199,8 +199,18 @@ const Tap = styled.TouchableOpacity`
   justify-content:center;
   align-items:center;
   border-style: solid;
-  `
+`
   // border-bottom-width: 3px;
+
+const QuarterValueText = styled.Text`
+  position: absolute;
+  ${props => [0,3].includes(props.index) ? 'right' : 'left'}: 20px;
+  bottom: 10px;
+  font-style:italic;
+  font-weight: bold;
+  font-size: 20px;
+  opacity: .5;
+`
 
 const styles = StyleSheet.create({
   gestureRecognizer: {
