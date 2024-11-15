@@ -4,7 +4,7 @@ import styled from 'styled-components/native';
 import Immersive from 'react-native-immersive';
 import GestureRecognizer, { swipeDirections } from "react-native-swipe-detect";
 
-const chickpeak_images = {
+const chickpeakImages = {
   0: undefined,
   1: require('../assets/chickpeas/chickpeaks_1.png'),
   2: require('../assets/chickpeas/chickpeaks_2.png'),
@@ -13,12 +13,16 @@ const chickpeak_images = {
   5: require('../assets/chickpeas/chickpeaks_5.png'),
 }
 
+const chickpeaksMiddle = require('../assets/chickpeas/chickpeaks_middle.png')
+
 const gestureConfig = {
   velocityThreshold: 0.3,
   directionalOffsetThreshold: 80,
 };
 
-const max_score = [4, 4, 5, 5];
+const quarterPointValue = (index) => {
+  return isSinglePointQuarter(index) ? 1 : 5;
+}
 
 // ----------------------- //
 // -----   UTILITY   ----- //
@@ -28,24 +32,19 @@ const isSinglePointQuarter = (index) => {
   return [2,3].includes(index);
 } 
 
-const quarterPointValue = (index) => {
-  return isSinglePointQuarter(index) ? 1 : 5;
+const getTeamIndex = (index) => {
+  return index === 0 || index === 3 ? 0 : 1; 
 }
 
 export default function PlaymatScreen(): React.JSX.Element {
 
-  const [teamScore, setTeamScore] = useState([0,0]);
-  const [individualScore, setIndividualScore] = useState([0,0,0,0]);
+  const [score, setScore] = useState([0,0]); // First index: 1,3. Second index: 1,2 
 
   useEffect(() => {
-    console.log("Individual Score: ", individualScore);
-    calculateTeamScores();
-  }, [individualScore]);
+    console.log("Score: ", score);
+    // calculateTeamScores();
+  }, [score]);
   
-  useEffect(() => {
-    console.log("Team Score: ", teamScore);
-  }, [teamScore]);
-
   useEffect(() => {
     // Enable immersive mode
     Immersive.on();
@@ -60,56 +59,48 @@ export default function PlaymatScreen(): React.JSX.Element {
   // -----   UTILITY   ----- //
   // ----------------------- //
 
-  const calculateTeamScores = () => {
-    let team1 = individualScore[0]*quarterPointValue(0) + individualScore[3]*quarterPointValue(3); 
-    let team2 = individualScore[1]*quarterPointValue(1) + individualScore[2]*quarterPointValue(2);
-    setTeamScore([team1, team2]); 
-  }
-
   return (
     <>
       <StatusBar hidden={true} />
-      <MainView resizeMode="contain"  source={require('../assets/playmat.png')}>
+      <MainView resizeMode="contain">
 
-        {individualScore.map((element, index) => {
-          return <Quarter key={index} index={index} individualScore={individualScore} setIndividualScore={setIndividualScore} />;
+        {[...Array(4)].map((element, index) => {
+          return <Quarter key={index} index={index} score={score} setScore={setScore} />;
         })}
 
+        <ChickpeaksMiddleView>
+          {/* <ChickpeaksMiddle source={chickpeaksMiddle} /> */}
+        </ChickpeaksMiddleView>
+
+        <PlaymatBackground />
       </MainView>
     </>
   );
 };
 
-const Quarter = ({index, individualScore, setIndividualScore}) => {
+const Quarter = ({index, score, setScore}) => {
 
-  const [quarterScore, setQuarterScore] = useState(0);
-
-  useEffect(() => {
-    let newScore = [...individualScore];
-    newScore[index] = quarterScore;  
-    setIndividualScore(newScore);
-  }, [quarterScore]);
+  const teamIndex = getTeamIndex(index);
+  const pointValue = quarterPointValue(index);
 
   // ----------------------- //
   // -----   UTILITY   ----- //
   // ----------------------- //
 
-  const increaseQuarterScore = () => {
-    
-    if (isSinglePointQuarter(index)) {
-    }
-
-    // Check if the cuarter score passes from its limit
-    if (quarterScore === max_score[index]) {
-      
-      return
-    }
-    setQuarterScore(quarterScore+1);
+  const increaseScore = () => {
+    let newTeamScore = score[teamIndex]+pointValue;
+    if (newTeamScore>=20) {newTeamScore = 20}
+    let newScore = [...score];
+    newScore[teamIndex] = newTeamScore; 
+    setScore(newScore);
   }
 
-  const decreaseQuarterScore = () => {
-    if (quarterScore === 0) {return}
-    setQuarterScore(quarterScore-1);
+  const decreaseScore = () => {
+    let newTeamScore = score[teamIndex]-pointValue;
+    if (newTeamScore<=0) {newTeamScore = 0}
+    let newScore = [...score];
+    newScore[teamIndex] = newTeamScore; 
+    setScore(newScore);
   };
 
   // ----------------------- //
@@ -117,7 +108,7 @@ const Quarter = ({index, individualScore, setIndividualScore}) => {
   // ----------------------- //
 
   const onTap = () => {
-    increaseQuarterScore();
+    increaseScore();
   }
 
   const onSwipe = (direction, state) => {
@@ -131,10 +122,10 @@ const Quarter = ({index, individualScore, setIndividualScore}) => {
     
     switch (direction) {
       case swipeDirections.SWIPE_UP:
-        increaseQuarterScore();
+        increaseScore();
         break;
       case swipeDirections.SWIPE_DOWN:
-        decreaseQuarterScore();
+        decreaseScore();
         break;
       default:
 
@@ -153,14 +144,37 @@ const Quarter = ({index, individualScore, setIndividualScore}) => {
         style={styles.gestureRecognizer}
       >
         <Tap onPress={onTap} activeOpacity={1} style={index===0 || index===3 ? styles.blue : styles.red}>
-          {quarterScore !== undefined && <Chickpea source={chickpeak_images[quarterScore]} /> }
+          <ChickpeaImage teamScore={score[teamIndex]} index={index} />
         </Tap>
         {/* <Text style={{textAlign:'center', position: 'absolute'}}>{index}</Text> */}
         <QuarterValueText index={index}>{isSinglePointQuarter(index) ? '1' : '5'}</QuarterValueText>
       </GestureRecognizer>
     </QuarterElement>
   )
+}
+
+const ChickpeaImage = ({teamScore, index}) => {
+
+  let cheackpeaImageIndex;
+
+  if (isSinglePointQuarter(index)) {
+    cheackpeaImageIndex = teamScore%5;
+  } 
   
+  if (!isSinglePointQuarter(index)) {
+    cheackpeaImageIndex = Math.trunc(teamScore/5);
+  }
+
+  return (
+    <>
+      {teamScore ? (
+        <Chickpea source={chickpeakImages[cheackpeaImageIndex]} />
+      ) 
+      : null
+      }
+    </>
+  );
+
 }
 
 // ---------------------- //
@@ -177,7 +191,7 @@ const MainView = styled.ImageBackground`
 const QuarterElement = styled.View`
   width: 50%;
   height: 50%;
-  background: green;
+  background: transparent;
 
   border: 1px dashed white;
 `;
@@ -187,6 +201,28 @@ const QuarterElement = styled.View`
   // border-top-width: ${props => props.borderTop ? '2px' : '0px'};
   // border-right-width: ${props => props.borderRight ? '2px' : '0px'};
   // border-left-width: ${props => props.borderLeft ? '2px' : '0px'};
+
+const ChickpeaksMiddleView = styled.View`
+  position:absolute;
+  width: 100%;
+  height: 100%;
+  justify-content:center;
+  align-items:center;
+  z-index:-1;
+`
+const ChickpeaksMiddle = styled.Image`
+  width: 50%;
+  height: 50%;
+  resize-mode:contain;
+`
+
+const PlaymatBackground = styled.View `
+  position:absolute;
+  width: 100%;
+  height: 100%;
+  background: green;
+  z-index:-2;
+` 
 
 const Chickpea = styled.Image`
   width: 70px;
