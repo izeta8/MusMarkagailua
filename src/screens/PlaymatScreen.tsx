@@ -15,7 +15,7 @@ const chickpeakImages = {
 }
 
 const chickpeaksMiddle = require('../assets/chickpeas/chickpeaks_middle.png')
-const playmatImage = require('../assets/playmat.png'); 
+const playmatImage = require('../assets/playmat.png');
 
 const gestureConfig = {
   velocityThreshold: 0.3,
@@ -32,16 +32,16 @@ const quarterPointValue = (index) => {
 
 const isSinglePointQuarter = (index) => {
   return [2,3].includes(index);
-} 
+}
 
 const getTeamIndex = (index) => {
-  return index === 0 || index === 3 ? 0 : 1; 
+  return index === 0 || index === 3 ? 0 : 1;
 }
 
 export default function PlaymatScreen(): React.JSX.Element {
 
-  const [score, setScore] = useState([0,0]); // First index: 1,3. Second index: 1,2 
- 
+  const [score, setScore] = useState([0,0]); // First index: 1,3. Second index: 1,2
+
   useEffect(() => {
 
     // When the player enters the app load the score saved in async storage.
@@ -115,7 +115,7 @@ const Quarter = ({index, score, setScore}) => {
     let newTeamScore = score[teamIndex]+pointValue;
     if (newTeamScore>=20) {newTeamScore = 20}
     let newScore = [...score];
-    newScore[teamIndex] = newTeamScore; 
+    newScore[teamIndex] = newTeamScore;
     setScore(newScore);
   }
 
@@ -123,7 +123,7 @@ const Quarter = ({index, score, setScore}) => {
     let newTeamScore = score[teamIndex]-pointValue;
     if (newTeamScore<=0) {newTeamScore = 0}
     let newScore = [...score];
-    newScore[teamIndex] = newTeamScore; 
+    newScore[teamIndex] = newTeamScore;
     setScore(newScore);
   };
 
@@ -142,8 +142,8 @@ const Quarter = ({index, score, setScore}) => {
 
     if (index === 0 || index === 1) {
       direction = direction === swipeDirections.SWIPE_UP ? swipeDirections.SWIPE_DOWN : swipeDirections.SWIPE_UP;
-    }  
-    
+    }
+
     switch (direction) {
       case swipeDirections.SWIPE_UP:
         increaseScore();
@@ -161,21 +161,33 @@ const Quarter = ({index, score, setScore}) => {
   // ----------------------- //
 
   return (
-    <QuarterElement style={[[0,1].includes(index) ? styles.rotate : undefined]} >
+    <QuarterElement
+      borderLeft={[0, 3].includes(index)}
+      borderTop={[1, 2].includes(index)}
+      style={[
+        [0, 1].includes(index) ? styles.rotate : null,
+      ]}
+    >
       <GestureRecognizer
         onSwipe={(direction, state) => onSwipe(direction, state)}
         config={gestureConfig}
         style={styles.gestureRecognizer}
       >
-        <Tap onPress={onTap} activeOpacity={1} style={index===0 || index===3 ? styles.blue : styles.red}>
+        <Tap
+          onPress={onTap}
+          activeOpacity={1}
+          borderColor={index===0 || index===3 ? 'transparent' : 'transparent'}
+          borderLeft={[1, 2].includes(index)}
+          borderRight={[0, 3].includes(index)}
+
+        >
           <ChickpeaImage teamScore={score[teamIndex]} index={index} />
         </Tap>
         {/* <Text style={{textAlign:'center', position: 'absolute'}}>{index}</Text> */}
         <QuarterValueText index={index}>{isSinglePointQuarter(index) ? '1' : '5'}</QuarterValueText>
       </GestureRecognizer>
-      {/* <QuarterDivider></QuarterDivider> */}
     </QuarterElement>
-    
+
   )
 }
 
@@ -185,8 +197,8 @@ const ChickpeaImage = ({teamScore, index}) => {
 
   if (isSinglePointQuarter(index)) {
     cheackpeaImageIndex = teamScore%5;
-  } 
-  
+  }
+
   if (!isSinglePointQuarter(index)) {
     cheackpeaImageIndex = Math.trunc(teamScore/5);
   }
@@ -195,7 +207,7 @@ const ChickpeaImage = ({teamScore, index}) => {
     <>
       {teamScore ? (
         <Chickpea source={chickpeakImages[cheackpeaImageIndex]} />
-      ) 
+      )
       : null
       }
     </>
@@ -217,15 +229,15 @@ const MainView = styled.ImageBackground`
 const QuarterElement = styled.View`
   width: 50%;
   height: 50%;
-  border: 1px dashed white;
   z-index: 1;
+
+  border-style: dashed;
+  border-color: white;
+
+  border-left-width: ${props => props.borderLeft ? '3px' : '0px'};
+  border-top-width: ${props => props.borderTop ? '3px' : '0px'};
+  border-bottom: 3px dashed white;
 `;
-  // border-style: dashed;
-  // border-color: white;
-  // border-bottom-width: ${props => props.borderBottom ? '2px' : '0px'};
-  // border-top-width: ${props => props.borderTop ? '2px' : '0px'};
-  // border-right-width: ${props => props.borderRight ? '2px' : '0px'};
-  // border-left-width: ${props => props.borderLeft ? '2px' : '0px'};
 
 const ChickpeaksMiddleView = styled.View`
   position:absolute;
@@ -252,28 +264,22 @@ const Tap = styled.TouchableOpacity`
   height:100%;
   justify-content:center;
   align-items:center;
-  border-style: solid;
+
+  border-bottom-width: 1px;
+  border-color: ${props => props.borderColor};
+  border-left-width: ${props => props.borderLeft ? '1px' : '0px'};
+  border-right-width: ${props => props.borderRight ? '1px' : '0px'};
 `
-  // border-bottom-width: 3px;
 
 const QuarterValueText = styled.Text`
   position: absolute;
-  ${props => [0,3].includes(props.index) ? 'right' : 'left'}: 20px;
   bottom: 10px;
   font-style:italic;
   font-weight: bold;
   font-size: 20px;
   opacity: .5;
+  ${props => [0,3].includes(props.index) ? 'right' : 'left'}: 20px;
 `
-
-// const QuarterDivider = styled.View`
-//   background: blue;
-//   width: 100%;
-//   height:100%;
-//   flex:1;
-//   position:absolute;
-//   z-index:1;
-// `
 
 const styles = StyleSheet.create({
   gestureRecognizer: {
@@ -281,12 +287,6 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  }, 
-  blue: {
-    borderColor: 'blue',
-  },
-  red: {
-    borderColor: 'red',
   },
   rotate: {
     transform: [{rotate: '180deg'}]
