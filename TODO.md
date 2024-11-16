@@ -1,5 +1,6 @@
-- Playmat texture.
+- Chickpea takes time to render sometimes.
 - Save score in AsyncStorage.
 - 'Ustela' score. 
-- Reset system. 
 - Improve borders. 
+- Reset system. 
+- Basque font family.
