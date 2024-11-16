@@ -1,4 +1,3 @@
-- Chickpea takes time to render sometimes.
 - Save score in AsyncStorage.
 - 'Ustela' score. 
 - Improve borders. 
