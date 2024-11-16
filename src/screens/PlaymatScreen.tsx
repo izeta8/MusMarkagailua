@@ -3,6 +3,7 @@ import { ImageBackground, StyleSheet, Text, View, StatusBar, ToastAndroid, Image
 import styled from 'styled-components/native';
 import Immersive from 'react-native-immersive';
 import GestureRecognizer, { swipeDirections } from "react-native-swipe-detect";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const chickpeakImages = {
   0: undefined,
@@ -40,13 +41,25 @@ const getTeamIndex = (index) => {
 export default function PlaymatScreen(): React.JSX.Element {
 
   const [score, setScore] = useState([0,0]); // First index: 1,3. Second index: 1,2 
+ 
+  useEffect(() => {
 
-  useEffect(() => {
-    console.log("Score: ", score);
-    // calculateTeamScores();
-  }, [score]);
-  
-  useEffect(() => {
+    // When the player enters the app load the score saved in async storage.
+    (async () => {
+      try {
+        const scoreJSON = await AsyncStorage.getItem('score');
+        if (scoreJSON) {
+          const parsed = JSON.parse(scoreJSON);
+          setScore(parsed.score);
+          console.log("Score loaded successfully: ", parsed.score);
+        } else {
+          console.log("Score not found on AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Error reading score:", error);
+      }
+    })();
+
     // Enable immersive mode
     Immersive.on();
 
@@ -55,6 +68,18 @@ export default function PlaymatScreen(): React.JSX.Element {
       Immersive.off();
     };
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const scoreJSON = { score };
+        await AsyncStorage.setItem('score', JSON.stringify(scoreJSON));
+        console.log("Score JSON: ", scoreJSON);
+      } catch (error) {
+        console.error("Error saving the score:", error);
+      }
+    })();
+  }, [score]);
 
   // ----------------------- //
   // -----   UTILITY   ----- //
