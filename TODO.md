@@ -1,4 +1,3 @@
-- Save score in AsyncStorage.
 - 'Ustela' score. 
 - Improve borders. 
 - Reset system. 
