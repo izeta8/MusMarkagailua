@@ -14,6 +14,7 @@ const chickpeakImages = {
 }
 
 const chickpeaksMiddle = require('../assets/chickpeas/chickpeaks_middle.png')
+const playmatImage = require('../assets/playmat.png'); 
 
 const gestureConfig = {
   velocityThreshold: 0.3,
@@ -62,17 +63,15 @@ export default function PlaymatScreen(): React.JSX.Element {
   return (
     <>
       <StatusBar hidden={true} />
-      <MainView resizeMode="contain">
+      <MainView source={playmatImage}>
 
         {[...Array(4)].map((element, index) => {
           return <Quarter key={index} index={index} score={score} setScore={setScore} />;
         })}
 
         <ChickpeaksMiddleView>
-          {/* <ChickpeaksMiddle source={chickpeaksMiddle} /> */}
+          <ChickpeaksMiddle source={chickpeaksMiddle} />
         </ChickpeaksMiddleView>
-
-        <PlaymatBackground />
       </MainView>
     </>
   );
@@ -137,7 +136,7 @@ const Quarter = ({index, score, setScore}) => {
   // ----------------------- //
 
   return (
-    <QuarterElement color="red" style={[[0,1].includes(index) ? styles.rotate : undefined]} >
+    <QuarterElement style={[[0,1].includes(index) ? styles.rotate : undefined]} >
       <GestureRecognizer
         onSwipe={(direction, state) => onSwipe(direction, state)}
         config={gestureConfig}
@@ -149,7 +148,9 @@ const Quarter = ({index, score, setScore}) => {
         {/* <Text style={{textAlign:'center', position: 'absolute'}}>{index}</Text> */}
         <QuarterValueText index={index}>{isSinglePointQuarter(index) ? '1' : '5'}</QuarterValueText>
       </GestureRecognizer>
+      {/* <QuarterDivider></QuarterDivider> */}
     </QuarterElement>
+    
   )
 }
 
@@ -191,9 +192,8 @@ const MainView = styled.ImageBackground`
 const QuarterElement = styled.View`
   width: 50%;
   height: 50%;
-  background: transparent;
-
   border: 1px dashed white;
+  z-index: 1;
 `;
   // border-style: dashed;
   // border-color: white;
@@ -208,22 +208,13 @@ const ChickpeaksMiddleView = styled.View`
   height: 100%;
   justify-content:center;
   align-items:center;
-  z-index:-1;
 `
 const ChickpeaksMiddle = styled.Image`
-  width: 50%;
-  height: 50%;
+  width: 200px;
+  height: 200px;
   resize-mode:contain;
+  z-index:2;
 `
-
-const PlaymatBackground = styled.View `
-  position:absolute;
-  width: 100%;
-  height: 100%;
-  background: green;
-  z-index:-2;
-` 
-
 const Chickpea = styled.Image`
   width: 70px;
   resize-mode: contain;
@@ -247,6 +238,15 @@ const QuarterValueText = styled.Text`
   font-size: 20px;
   opacity: .5;
 `
+
+// const QuarterDivider = styled.View`
+//   background: blue;
+//   width: 100%;
+//   height:100%;
+//   flex:1;
+//   position:absolute;
+//   z-index:1;
+// `
 
 const styles = StyleSheet.create({
   gestureRecognizer: {
