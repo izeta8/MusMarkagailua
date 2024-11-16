@@ -1,0 +1,5 @@
+- Playmat texture.
+- Save score in AsyncStorage.
+- 'Ustela' score. 
+- Reset system. 
+- Improve borders. 
