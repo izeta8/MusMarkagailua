@@ -1,4 +1,3 @@
 - 'Ustela' score. 
-- Improve borders. 
 - Reset system. 
 - Basque font family.
