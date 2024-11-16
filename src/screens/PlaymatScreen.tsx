@@ -215,7 +215,9 @@ const ChickpeaksMiddle = styled.Image`
   resize-mode:contain;
   z-index:2;
 `
-const Chickpea = styled.Image`
+const Chickpea = styled.Image.attrs({
+  fadeDuration: 0
+})`
   width: 70px;
   resize-mode: contain;
 `
