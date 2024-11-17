@@ -41,7 +41,8 @@ const getTeamIndex = (index) => {
 
 export default function PlaymatScreen(): React.JSX.Element {
 
-  const [score, setScore] = useState([0,0]); // First index: 1,3. Second index: 1,2
+  const [score, setScore] = useState([0,0]); // First index: 0,3. Second index: 1,2
+  const [gameScore, setGameScore] = useState([0,0]); // First index: Team 1, Second index: Team 2 
 
   useEffect(() => {
 
