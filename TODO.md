@@ -1,2 +1,1 @@
-- 'Ustela' score. 
 - Reset system. 
