@@ -85,7 +85,7 @@ export default function PlaymatScreen(): React.JSX.Element {
   }, [score]);
 
 
- useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
         const gameScoreJSON = {gameScore};
@@ -97,6 +97,12 @@ export default function PlaymatScreen(): React.JSX.Element {
     })();
   }, [gameScore]);
 
+
+  const handleReset = () => {
+    setScore([0,0]);
+    setGameScore([0,0]);
+  }
+
   // ---------------------- //
   // -----   RENDER   ----- //
   // ---------------------- //
@@ -104,6 +110,7 @@ export default function PlaymatScreen(): React.JSX.Element {
   return (
     <>
       <StatusBar hidden={true} />
+
       <MainView source={playmatImage}>
 
         {[...Array(4)].map((element, index) => {
@@ -118,12 +125,20 @@ export default function PlaymatScreen(): React.JSX.Element {
         })}
 
         <ChickpeaksMiddleView>
+
+          <ResetTextButton onPress={handleReset}>
+            <ResetText>Reset</ResetText>
+          </ResetTextButton>
+
           <ChickpeaksMiddle source={chickpeaksMiddle} />
+
         </ChickpeaksMiddleView>
+      
       </MainView>
     </>
   );
 };
+
 
 const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
 
@@ -338,6 +353,21 @@ const ChickpeaksMiddle = styled.Image`
   resize-mode:contain;
   z-index:2;
 `
+const ResetTextButton = styled.TouchableOpacity`
+  z-index: 3;
+  background: rgba(0,0,0,.5);
+  color: white;
+  border: 1px solid white;
+  padding: 8px;
+  border-radius: 3px;
+  position: absolute;
+  `
+  const ResetText = styled.Text`
+  font-size: 20px;
+  font-family: Vascan;
+  color: white;
+`
+
 const Chickpea = styled.Image.attrs({
   fadeDuration: 0
 })`
