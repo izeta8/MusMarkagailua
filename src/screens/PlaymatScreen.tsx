@@ -14,6 +14,7 @@ const chickpeakImages = {
   5: require('../assets/chickpeas/chickpeaks_5.png'),
 }
 
+const silverChickpea = require('../assets/chickpeas/silver_chickpea.png')
 const chickpeaksMiddle = require('../assets/chickpeas/chickpeaks_middle.png')
 const playmatImage = require('../assets/playmat.png');
 
@@ -72,18 +73,18 @@ export default function PlaymatScreen(): React.JSX.Element {
   useEffect(() => {
     (async () => {
       try {
-        const scoreJSON = { score };
+        const scoreJSON = {score};
         await AsyncStorage.setItem('score', JSON.stringify(scoreJSON));
-        console.log("Score JSON: ", scoreJSON);
+        console.log("Score: ", scoreJSON.score);
       } catch (error) {
         console.error("Error saving the score:", error);
       }
     })();
   }, [score]);
 
-  // ----------------------- //
-  // -----   UTILITY   ----- //
-  // ----------------------- //
+  // ---------------------- //
+  // -----   RENDER   ----- //
+  // ---------------------- //
 
   return (
     <>
@@ -168,6 +169,15 @@ const Quarter = ({index, score, setScore}) => {
         [0, 1].includes(index) ? styles.rotate : null,
       ]}
     >
+
+      {[0, 1].includes(index) && (
+        <GamePointContainer
+          position={index===0 ? 'right' : 'left'}
+        >
+          <GamePointImage source={silverChickpea} />
+        </GamePointContainer>
+      )}
+
       <GestureRecognizer
         onSwipe={(direction, state) => onSwipe(direction, state)}
         config={gestureConfig}
@@ -217,7 +227,29 @@ const ChickpeaImage = ({teamScore, index}) => {
 
 // ---------------------- //
 // -----   STYLES   ----- //
-// ---------------------- //
+// ---------------------- // 
+
+const GamePointContainer = styled.View`
+  position: absolute;
+  ${props => props.position}: 10px;
+  background: blue;
+  padding: 10px;
+  background: rgba(0,0,0,.2);
+  border: 1px dashed white;
+  margin: 10px 0px;
+  height: 72%;
+
+  flex-wrap: wrap;
+  justify-content:center;
+  align-items:center;
+  gap: 8px;
+`
+
+const GamePointImage = styled.Image`
+  width: 30px;
+  height: 30px;
+  resize-mode:contain;
+`
 
 const MainView = styled.ImageBackground`
   width: 100%;
