@@ -4,6 +4,7 @@ import styled from 'styled-components/native';
 import Immersive from 'react-native-immersive';
 import GestureRecognizer, { swipeDirections } from "react-native-swipe-detect";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BasqueText } from "../components/BasqueText";
 
 const chickpeakImages = {
   0: undefined,
@@ -83,6 +84,19 @@ export default function PlaymatScreen(): React.JSX.Element {
     })();
   }, [score]);
 
+
+ useEffect(() => {
+    (async () => {
+      try {
+        const gameScoreJSON = {gameScore};
+        await AsyncStorage.setItem('gameScore', JSON.stringify(gameScoreJSON));
+        console.log("Game Score: ", gameScoreJSON.gameScore);
+      } catch (error) {
+        console.error("Error saving the game score:", error);
+      }
+    })();
+  }, [gameScore]);
+
   // ---------------------- //
   // -----   RENDER   ----- //
   // ---------------------- //
@@ -93,7 +107,14 @@ export default function PlaymatScreen(): React.JSX.Element {
       <MainView source={playmatImage}>
 
         {[...Array(4)].map((element, index) => {
-          return <Quarter key={index} index={index} score={score} setScore={setScore} />;
+          return <Quarter 
+                    key={index}
+                    index={index}
+                    score={score}
+                    setScore={setScore}
+                    gameScore={gameScore}
+                    setGameScore={setGameScore}
+                  />;
         })}
 
         <ChickpeaksMiddleView>
@@ -104,7 +125,7 @@ export default function PlaymatScreen(): React.JSX.Element {
   );
 };
 
-const Quarter = ({index, score, setScore}) => {
+const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
 
   const teamIndex = getTeamIndex(index);
   const pointValue = quarterPointValue(index);
@@ -128,6 +149,13 @@ const Quarter = ({index, score, setScore}) => {
     newScore[teamIndex] = newTeamScore;
     setScore(newScore);
   };
+
+  const increaseGamePoint = () => {
+    let newGameScore = [...gameScore];
+    newGameScore[teamIndex] = newGameScore[teamIndex]+1;
+    setGameScore(newGameScore);
+    setScore([0,0]);
+  }
 
   // ----------------------- //
   // -----   GESTURE   ----- //
@@ -167,15 +195,18 @@ const Quarter = ({index, score, setScore}) => {
       borderLeft={[0, 3].includes(index)}
       borderTop={[1, 2].includes(index)}
       style={[
-        [0, 1].includes(index) ? styles.rotate : null,
+        !isSinglePointQuarter(index) ? styles.rotate : null,
       ]}
     >
-
-      {[0, 1].includes(index) && (
+      {!isSinglePointQuarter(index) && (
         <GamePointContainer
           position={index===0 ? 'right' : 'left'}
         >
-          <GamePointImage source={silverChickpea} />
+
+          {[...Array(gameScore[teamIndex])].map((gamePoints, index) => {
+            return <GamePointImage key={index} source={silverChickpea} />
+          })}
+
         </GamePointContainer>
       )}
 
@@ -193,8 +224,16 @@ const Quarter = ({index, score, setScore}) => {
 
         >
           <ChickpeaImage teamScore={score[teamIndex]} index={index} />
+
+          {!isSinglePointQuarter(index) && score[teamIndex] === 20 && (
+
+            <AddGamePointButton onPress={increaseGamePoint}>
+              <AddGamePointText>Ustela Gehitu</AddGamePointText>
+            </AddGamePointButton>
+          )}
+
         </Tap>
-        {/* <Text style={{textAlign:'center', position: 'absolute'}}>{index}</Text> */}
+        {/* <Text style={styles.text}>{index}</Text> */}
         <QuarterValueText index={index}>{isSinglePointQuarter(index) ? '1' : '5'}</QuarterValueText>
       </GestureRecognizer>
     </QuarterElement>
@@ -230,6 +269,19 @@ const ChickpeaImage = ({teamScore, index}) => {
 // -----   STYLES   ----- //
 // ---------------------- // 
 
+const AddGamePointButton = styled.TouchableOpacity`
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, .85);
+  border-radius: 3px;
+  background: rgba(0,0,0,.2);
+`
+
+const AddGamePointText = styled.Text`
+  font-family: Vascan;
+  font-size: 20px;
+  color: rgba(255, 255, 255, .85);
+`
+
 const GamePointContainer = styled.View`
   position: absolute;
   ${props => props.position}: 10px;
@@ -239,16 +291,17 @@ const GamePointContainer = styled.View`
   border: 1px dashed white;
   margin: 10px 0px;
   height: 72%;
+  min-width: 48px;
 
   flex-wrap: wrap;
   justify-content:center;
   align-items:center;
-  gap: 8px;
+  gap: 3px;
 `
 
 const GamePointImage = styled.Image`
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   resize-mode:contain;
 `
 
@@ -305,6 +358,8 @@ const Tap = styled.TouchableOpacity`
 `
 
 const QuarterValueText = styled.Text`
+  color: white;  
+  font-family: Vascan;
   position: absolute;
   bottom: 10px;
   font-style:italic;
@@ -323,5 +378,5 @@ const styles = StyleSheet.create({
   },
   rotate: {
     transform: [{rotate: '180deg'}]
-  }
+  },
 });
