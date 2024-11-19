@@ -28,6 +28,11 @@ const quarterPointValue = (index) => {
   return isSinglePointQuarter(index) ? 1 : 5;
 }
 
+const pointTypes = {
+  "REGULAR_POINT": "REGULAR_POINT",
+  "GAME_POINT": "GAME_POINT",
+}
+
 // ----------------------- //
 // -----   UTILITY   ----- //
 // ----------------------- //
@@ -57,6 +62,21 @@ export default function PlaymatScreen(): React.JSX.Element {
           console.log("Score loaded successfully: ", parsed.score);
         } else {
           console.log("Score not found on AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Error reading score:", error);
+      }
+    })();
+
+    (async () => {
+      try {
+        const gameScoreJSON = await AsyncStorage.getItem('gameScore');
+        if (gameScoreJSON) {
+          const parsed = JSON.parse(gameScoreJSON);
+          setGameScore(parsed.gameScore);
+          console.log("Game Score loaded successfully: ", parsed.gameScore);
+        } else {
+          console.log("Game Score not found on AsyncStorage");
         }
       } catch (error) {
         console.error("Error reading score:", error);
@@ -165,22 +185,42 @@ const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
     setScore(newScore);
   };
 
-  const increaseGamePoint = () => {
+  const increaseGamePoint = (reset = true) => {
     let newGameScore = [...gameScore];
     newGameScore[teamIndex] = newGameScore[teamIndex]+1;
     setGameScore(newGameScore);
-    setScore([0,0]);
+    if (reset) {
+      setScore([0,0]);
+    }
+  }
+
+  const decreaseGamePoint = (reset = true) => {
+    let newTeamScore = gameScore[teamIndex]-1;
+    if (newTeamScore<=0) {newTeamScore = 0}
+    let newScore = [...gameScore];
+    newScore[teamIndex] = newTeamScore;
+    setGameScore(newScore);
+    if (reset) {
+      setScore([0,0]);
+    }
   }
 
   // ----------------------- //
   // -----   GESTURE   ----- //
   // ----------------------- //
 
-  const onTap = () => {
-    increaseScore();
-  }
+  const onTap = (pointType) => {
 
-  const onSwipe = (direction, state) => {
+    if (pointType === pointTypes.REGULAR_POINT) {
+      increaseScore();
+    }
+
+    if (pointType === pointTypes.GAME_POINT) {
+      increaseGamePoint(false);
+    }
+  }
+  
+  const onSwipe = (direction, state, pointType) => {
 
     // Get rid of LEFT and RIGHT swipes.
     if (direction !== swipeDirections.SWIPE_UP && direction !== swipeDirections.SWIPE_DOWN) return;
@@ -191,10 +231,26 @@ const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
 
     switch (direction) {
       case swipeDirections.SWIPE_UP:
-        increaseScore();
+
+        if (pointType === pointTypes.REGULAR_POINT) {
+          increaseScore();
+        }
+
+        if (pointType === pointTypes.GAME_POINT) {
+          increaseGamePoint(false);
+        }
+
         break;
       case swipeDirections.SWIPE_DOWN:
-        decreaseScore();
+
+        if (pointType === pointTypes.REGULAR_POINT) {
+          decreaseScore();
+        }
+
+        if (pointType === pointTypes.GAME_POINT) {
+          decreaseGamePoint(false);
+        }
+
         break;
       default:
 
@@ -214,24 +270,43 @@ const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
       ]}
     >
       {!isSinglePointQuarter(index) && (
-        <GamePointContainer
-          position={index===0 ? 'right' : 'left'}
+        
+        <GestureRecognizer
+          onSwipe={(direction, state) => onSwipe(direction, state, pointTypes.GAME_POINT)}
+          config={gestureConfig}
+          style={[
+            styles.gamePointGestureRecognizer,
+            index === 0 ? styles.positionRight : styles.positionLeft
+          ]}
+          
         >
+          <GamePointContainer
+            position={index===0 ? 'right' : 'left'}
+          >
 
-          {[...Array(gameScore[teamIndex])].map((gamePoints, index) => {
-            return <GamePointImage key={index} source={silverChickpea} />
-          })}
+            <Tap
+              onPress={() => onTap(pointTypes.GAME_POINT)}
+              style={{flexWrap: 'wrap'}}
+              activeOpacity={1}
+            >
 
-        </GamePointContainer>
+              {[...Array(gameScore[teamIndex])].map((gamePoints, index) => {
+                return <GamePointImage key={index} source={silverChickpea} />
+              })}
+
+            </Tap>
+
+          </GamePointContainer>
+        </GestureRecognizer>
       )}
 
       <GestureRecognizer
-        onSwipe={(direction, state) => onSwipe(direction, state)}
+        onSwipe={(direction, state) => onSwipe(direction, state, pointTypes.REGULAR_POINT)}
         config={gestureConfig}
         style={styles.gestureRecognizer}
       >
         <Tap
-          onPress={onTap}
+          onPress={() => onTap(pointTypes.REGULAR_POINT)}
           activeOpacity={1}
           borderColor={index===0 || index===3 ? 'transparent' : 'transparent'}
           borderLeft={[1, 2].includes(index)}
@@ -248,8 +323,11 @@ const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
           )}
 
         </Tap>
-        {/* <Text style={styles.text}>{index}</Text> */}
-        <QuarterValueText index={index}>{isSinglePointQuarter(index) ? '1' : '5'}</QuarterValueText>
+
+        <QuarterValueText index={index} position={[0,3].includes(index) ? 'right' : 'left'}>
+          {isSinglePointQuarter(index) ? '1' : '5'}
+        </QuarterValueText>
+
       </GestureRecognizer>
     </QuarterElement>
 
@@ -298,18 +376,14 @@ const AddGamePointText = styled.Text`
 `
 
 const GamePointContainer = styled.View`
-  position: absolute;
-  ${props => props.position}: 10px;
-  background: blue;
-  padding: 10px;
   background: rgba(0,0,0,.2);
   border: 1px dashed white;
-  margin: 10px 0px;
-  height: 72%;
-  min-width: 48px;
+  
+  height: 100%;
+  width: 100%;
 
   flex-wrap: wrap;
-  justify-content:center;
+  justify-content:space-evenly;
   align-items:center;
   gap: 3px;
 `
@@ -377,14 +451,10 @@ const Chickpea = styled.Image.attrs({
 
 const Tap = styled.TouchableOpacity`
   width:100%;
+  padding: 10px;
   height:100%;
   justify-content:center;
   align-items:center;
-
-  border-bottom-width: 1px;
-  border-color: ${props => props.borderColor};
-  border-left-width: ${props => props.borderLeft ? '1px' : '0px'};
-  border-right-width: ${props => props.borderRight ? '1px' : '0px'};
 `
 
 const QuarterValueText = styled.Text`
@@ -396,7 +466,7 @@ const QuarterValueText = styled.Text`
   font-weight: bold;
   font-size: 20px;
   opacity: .5;
-  ${props => [0,3].includes(props.index) ? 'right' : 'left'}: 20px;
+  ${props => props.position}: 40px;
 `
 
 const styles = StyleSheet.create({
@@ -405,6 +475,19 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  gamePointGestureRecognizer: {
+    height: '72%',
+    position: 'absolute',
+    minWidth: 48, 
+    marginVertical: 10,
+    zIndex: 4,
+  },
+  positionLeft: {
+    left: 20
+  }, 
+  positionRight: {
+    right: 20
   },
   rotate: {
     transform: [{rotate: '180deg'}]
