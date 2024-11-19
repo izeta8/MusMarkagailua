@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { ImageBackground, StyleSheet, Text, View, StatusBar, ToastAndroid, Image, TouchableHighlight } from "react-native";
+import { StyleSheet, StatusBar } from "react-native";
 import styled from 'styled-components/native';
 import Immersive from 'react-native-immersive';
 import GestureRecognizer, { swipeDirections } from "react-native-swipe-detect";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BasqueText } from "../components/BasqueText";
+
+// ---------------------- //
+// -----   IMAGES   ----- //
+// ---------------------- //
 
 const chickpeakImages = {
   0: undefined,
@@ -15,18 +18,14 @@ const chickpeakImages = {
   5: require('../assets/chickpeas/chickpeaks_5.png'),
 }
 
+const playmatImage = require('../assets/playmat.png');
 const silverChickpea = require('../assets/chickpeas/silver_chickpea.png')
 const chickpeaksMiddle = require('../assets/chickpeas/chickpeaks_middle.png')
-const playmatImage = require('../assets/playmat.png');
 
 const gestureConfig = {
   velocityThreshold: 0.3,
   directionalOffsetThreshold: 80,
 };
-
-const quarterPointValue = (index) => {
-  return isSinglePointQuarter(index) ? 1 : 5;
-}
 
 const pointTypes = {
   "REGULAR_POINT": "REGULAR_POINT",
@@ -37,6 +36,10 @@ const pointTypes = {
 // -----   UTILITY   ----- //
 // ----------------------- //
 
+const quarterPointValue = (index) => {
+  return isSinglePointQuarter(index) ? 1 : 5;
+}
+
 const isSinglePointQuarter = (index) => {
   return [2,3].includes(index);
 }
@@ -44,6 +47,8 @@ const isSinglePointQuarter = (index) => {
 const getTeamIndex = (index) => {
   return index === 0 || index === 3 ? 0 : 1;
 }
+
+// -------------------------------------------------------- //
 
 export default function PlaymatScreen(): React.JSX.Element {
 
@@ -55,6 +60,8 @@ export default function PlaymatScreen(): React.JSX.Element {
     // When the player enters the app load the score saved in async storage.
     (async () => {
       try {
+
+        // -- Regular Score -- // 
         const scoreJSON = await AsyncStorage.getItem('score');
         if (scoreJSON) {
           const parsed = JSON.parse(scoreJSON);
@@ -63,13 +70,8 @@ export default function PlaymatScreen(): React.JSX.Element {
         } else {
           console.log("Score not found on AsyncStorage");
         }
-      } catch (error) {
-        console.error("Error reading score:", error);
-      }
-    })();
-
-    (async () => {
-      try {
+        
+        // -- Game Score -- // 
         const gameScoreJSON = await AsyncStorage.getItem('gameScore');
         if (gameScoreJSON) {
           const parsed = JSON.parse(gameScoreJSON);
@@ -78,6 +80,7 @@ export default function PlaymatScreen(): React.JSX.Element {
         } else {
           console.log("Game Score not found on AsyncStorage");
         }
+
       } catch (error) {
         console.error("Error reading score:", error);
       }
@@ -104,7 +107,6 @@ export default function PlaymatScreen(): React.JSX.Element {
     })();
   }, [score]);
 
-
   useEffect(() => {
     (async () => {
       try {
@@ -116,7 +118,6 @@ export default function PlaymatScreen(): React.JSX.Element {
       }
     })();
   }, [gameScore]);
-
 
   const handleReset = () => {
     setScore([0,0]);
@@ -336,25 +337,13 @@ const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
 
 const ChickpeaImage = ({teamScore, index}) => {
 
-  let cheackpeaImageIndex;
+  let cheackpeaImageIndex = isSinglePointQuarter(index) ? teamScore%5 : Math.trunc(teamScore/5);
 
-  if (isSinglePointQuarter(index)) {
-    cheackpeaImageIndex = teamScore%5;
+  if (teamScore) {
+    return (
+      <Chickpea source={chickpeakImages[cheackpeaImageIndex]} />
+    );
   }
-
-  if (!isSinglePointQuarter(index)) {
-    cheackpeaImageIndex = Math.trunc(teamScore/5);
-  }
-
-  return (
-    <>
-      {teamScore ? (
-        <Chickpea source={chickpeakImages[cheackpeaImageIndex]} />
-      )
-      : null
-      }
-    </>
-  );
 
 }
 
@@ -362,56 +351,11 @@ const ChickpeaImage = ({teamScore, index}) => {
 // -----   STYLES   ----- //
 // ---------------------- // 
 
-const AddGamePointButton = styled.TouchableOpacity`
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, .85);
-  border-radius: 3px;
-  background: rgba(0,0,0,.2);
-`
-
-const AddGamePointText = styled.Text`
-  font-family: Vascan;
-  font-size: 20px;
-  color: rgba(255, 255, 255, .85);
-`
-
-const GamePointContainer = styled.View`
-  background: rgba(0,0,0,.2);
-  border: 1px dashed white;
-  
-  height: 100%;
-  width: 100%;
-
-  flex-wrap: wrap;
-  justify-content:space-evenly;
-  align-items:center;
-  gap: 3px;
-`
-
-const GamePointImage = styled.Image`
-  width: 25px;
-  height: 25px;
-  resize-mode:contain;
-`
-
 const MainView = styled.ImageBackground`
   width: 100%;
   height: 100%;
   flex-direction: row;
   flex-wrap: wrap;
-`;
-
-const QuarterElement = styled.View`
-  width: 50%;
-  height: 50%;
-  z-index: 1;
-
-  border-style: dashed;
-  border-color: white;
-
-  border-left-width: ${props => props.borderLeft ? '3px' : '0px'};
-  border-top-width: ${props => props.borderTop ? '3px' : '0px'};
-  border-bottom: 3px dashed white;
 `;
 
 const ChickpeaksMiddleView = styled.View`
@@ -427,27 +371,21 @@ const ChickpeaksMiddle = styled.Image`
   resize-mode:contain;
   z-index:2;
 `
-const ResetTextButton = styled.TouchableOpacity`
-  z-index: 3;
-  background: rgba(0,0,0,.5);
-  color: white;
-  border: 1px solid white;
-  padding: 8px;
-  border-radius: 3px;
-  position: absolute;
-  `
-  const ResetText = styled.Text`
-  font-size: 20px;
-  font-family: Vascan;
-  color: white;
-`
 
-const Chickpea = styled.Image.attrs({
-  fadeDuration: 0
-})`
-  width: 70px;
-  resize-mode: contain;
-`
+// -----   QUARTER   ----- //
+
+const QuarterElement = styled.View`
+  width: 50%;
+  height: 50%;
+  z-index: 1;
+
+  border-style: dashed;
+  border-color: white;
+
+  border-left-width: ${props => props.borderLeft ? '3px' : '0px'};
+  border-top-width: ${props => props.borderTop ? '3px' : '0px'};
+  border-bottom: 3px dashed white;
+`;
 
 const Tap = styled.TouchableOpacity`
   width:100%;
@@ -467,6 +405,56 @@ const QuarterValueText = styled.Text`
   font-size: 20px;
   opacity: .5;
   ${props => props.position}: 40px;
+`
+
+const Chickpea = styled.Image.attrs({
+  fadeDuration: 0
+})`
+  width: 70px;
+  resize-mode: contain;
+`
+
+// -----   RESET   ----- //
+
+const ResetTextButton = styled.TouchableOpacity`
+  z-index: 3;
+  background: rgba(0,0,0,.5);
+  color: white;
+  border: 1px solid white;
+  padding: 8px;
+  border-radius: 3px;
+  position: absolute;
+`
+const ResetText = styled.Text`
+  font-size: 20px;
+  font-family: Vascan;
+  color: white;
+`
+
+// -----   GAME POINTS   ----- //
+
+const GamePointContainer = styled.View`
+  background: rgba(0,0,0,.2);
+  border: 1px dashed white;
+`
+
+const AddGamePointButton = styled.TouchableOpacity`
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, .85);
+  border-radius: 3px;
+  background: rgba(0,0,0,.2);
+`
+
+const AddGamePointText = styled.Text`
+  font-family: Vascan;
+  font-size: 20px;
+  color: rgba(255, 255, 255, .85);
+`
+
+const GamePointImage = styled.Image`
+  width: 25px;
+  height: 25px;
+  resize-mode:contain;
 `
 
 const styles = StyleSheet.create({
