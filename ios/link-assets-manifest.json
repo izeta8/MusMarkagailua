@@ -2,6 +2,10 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "src/assets/fonts/Kaxko.ttf",
+      "sha1": "f256d4ccb20712f46059be6a5f0f4c80b3fc2bf2"
+    },
+    {
       "path": "src/assets/fonts/Vascan.ttf",
       "sha1": "b5053f73e7daebbef027ab051f828c44ec26e902"
     }
