@@ -50,6 +50,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Vascan.ttf</string>
+		<string>Kaxko.ttf</string>
 	</array>
 </dict>
 </plist>

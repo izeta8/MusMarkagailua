@@ -15,6 +15,7 @@
 		7699B88040F8A987B510C191 /* libPods-MusMarkagailua-MusMarkagailuaTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-MusMarkagailua-MusMarkagailuaTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9945F99A7C70454EA52230A4 /* Vascan.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 224A3B06EA9D4CD6AC27DAA8 /* Vascan.ttf */; };
+		D43096294B9448DB8399D8BA /* Kaxko.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 681D8E3F660E413DB23F9A47 /* Kaxko.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		89C6BE57DB24E9ADA2F236DE /* Pods-MusMarkagailua-MusMarkagailuaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MusMarkagailua-MusMarkagailuaTests.release.xcconfig"; path = "Target Support Files/Pods-MusMarkagailua-MusMarkagailuaTests/Pods-MusMarkagailua-MusMarkagailuaTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		224A3B06EA9D4CD6AC27DAA8 /* Vascan.ttf */ = {isa = PBXFileReference; name = "Vascan.ttf"; path = "../src/assets/fonts/Vascan.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		681D8E3F660E413DB23F9A47 /* Kaxko.ttf */ = {isa = PBXFileReference; name = "Kaxko.ttf"; path = "../src/assets/fonts/Kaxko.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +159,7 @@
 			isa = "PBXGroup";
 			children = (
 				224A3B06EA9D4CD6AC27DAA8 /* Vascan.ttf */,
+				681D8E3F660E413DB23F9A47 /* Kaxko.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -258,6 +261,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				9945F99A7C70454EA52230A4 /* Vascan.ttf in Resources */,
+				D43096294B9448DB8399D8BA /* Kaxko.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
