@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, StatusBar } from "react-native";
+import { StyleSheet, StatusBar, View, Text, Touchable, TouchableOpacity } from "react-native";
 import styled from 'styled-components/native';
 import Immersive from 'react-native-immersive';
 import GestureRecognizer, { swipeDirections } from "react-native-swipe-detect";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ConfigurationButton from "../components/ConfigurationButton";
+import ResetButton from "../components/ResetButton";
+import {ResetModal, SettingsModal} from "../components/Modals"
+import Clock from "../components/Clock";
 
 // ---------------------- //
 // -----   IMAGES   ----- //
@@ -16,9 +20,12 @@ const chickpeakImages = {
   3: require('../assets/chickpeas/chickpeaks_3.png'),
   4: require('../assets/chickpeas/chickpeaks_4.png'),
   5: require('../assets/chickpeas/chickpeaks_5.png'),
+  6: require('../assets/chickpeas/chickpeaks_6.png'),
+  7: require('../assets/chickpeas/chickpeaks_7.png'),
+  8: require('../assets/chickpeas/chickpeaks_8.png'),
 }
 
-const playmatImage = require('../assets/playmat.png');
+const playmatImage = require('../assets/textures/playmat.png');
 const silverChickpea = require('../assets/chickpeas/silver_chickpea.png')
 const chickpeaksMiddle = require('../assets/chickpeas/chickpeaks_middle.png')
 
@@ -54,12 +61,25 @@ export default function PlaymatScreen(): React.JSX.Element {
 
   const [score, setScore] = useState([0,0]); // First index: 0,3. Second index: 1,2
   const [gameScore, setGameScore] = useState([0,0]); // First index: Team 1, Second index: Team 2 
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [resetModalVisible, setResetModalVisible] = useState(false);
+  const [maxScore, setMaxScore] = useState(20);  
 
   useEffect(() => {
 
     // When the player enters the app load the score saved in async storage.
     (async () => {
       try {
+
+        // -- Max Score -- //
+        const maxScoreJSON = await AsyncStorage.getItem("maxScore");
+        if (maxScoreJSON) {
+          const parsed = JSON.parse(maxScoreJSON);
+          setMaxScore(parsed.maxScore);
+          console.log("Max score loaded successfully: ", parsed.maxScore);
+        } else {
+          console.log("Max score not found on AsyncStorage");
+        }
 
         // -- Regular Score -- // 
         const scoreJSON = await AsyncStorage.getItem('score');
@@ -95,7 +115,31 @@ export default function PlaymatScreen(): React.JSX.Element {
     };
   }, []);
 
+
   useEffect(() => {
+    (async () => {
+      try {
+        const maxScoreJSON = {maxScore};
+        await AsyncStorage.setItem('maxScore', JSON.stringify(maxScoreJSON));
+        console.log("Max Score: ", maxScoreJSON.maxScore);
+      } catch (error) {
+        console.error("Error saving the max score:", error);
+      }
+    })();
+
+    // Handle max points (settings change)
+    let newScore = score.map(teamScore => {
+      if (teamScore>maxScore) {
+        teamScore = maxScore;
+      }
+      return teamScore;
+    });
+    setScore(newScore);
+
+  }, [maxScore]);
+
+  useEffect(() => {
+    
     (async () => {
       try {
         const scoreJSON = {score};
@@ -105,6 +149,7 @@ export default function PlaymatScreen(): React.JSX.Element {
         console.error("Error saving the score:", error);
       }
     })();
+    
   }, [score]);
 
   useEffect(() => {
@@ -119,11 +164,6 @@ export default function PlaymatScreen(): React.JSX.Element {
     })();
   }, [gameScore]);
 
-  const handleReset = () => {
-    setScore([0,0]);
-    setGameScore([0,0]);
-  }
-
   // ---------------------- //
   // -----   RENDER   ----- //
   // ---------------------- //
@@ -132,6 +172,23 @@ export default function PlaymatScreen(): React.JSX.Element {
     <>
       <StatusBar hidden={true} />
 
+      <CenteredView>
+        <SettingsModal 
+          modalVisible={settingsModalVisible}
+          setModalVisible={setSettingsModalVisible}
+          maxScore={maxScore}
+          setMaxScore={setMaxScore}
+        />
+        <ResetModal
+          modalVisible={resetModalVisible}
+          setModalVisible={setResetModalVisible}
+          setScore={setScore}
+          setGameScore={setGameScore}
+        />
+      </CenteredView>
+
+      <Clock />
+      
       <MainView source={playmatImage}>
 
         {[...Array(4)].map((element, index) => {
@@ -142,26 +199,29 @@ export default function PlaymatScreen(): React.JSX.Element {
                     setScore={setScore}
                     gameScore={gameScore}
                     setGameScore={setGameScore}
+                    maxScore={maxScore}
                   />;
         })}
 
-        <ChickpeaksMiddleView>
+        <CenteredView>
+          <ConfigurationButton 
+            onPress={() => {setSettingsModalVisible(true)}}
+          />
+          <ResetButton 
+            onPress={() => {setResetModalVisible(true)}}
+          />
+        </CenteredView>
 
-          <ResetTextButton onPress={handleReset}>
-            <ResetText>Reset</ResetText>
-          </ResetTextButton>
-
+        <CenteredView>
           <ChickpeaksMiddle source={chickpeaksMiddle} />
-
-        </ChickpeaksMiddleView>
+        </CenteredView>
       
       </MainView>
     </>
   );
 };
 
-
-const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
+const Quarter = ({index, score, setScore, gameScore, setGameScore, maxScore})  => {
 
   const teamIndex = getTeamIndex(index);
   const pointValue = quarterPointValue(index);
@@ -172,7 +232,7 @@ const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
 
   const increaseScore = () => {
     let newTeamScore = score[teamIndex]+pointValue;
-    if (newTeamScore>=20) {newTeamScore = 20}
+    if (newTeamScore>=maxScore) {newTeamScore = maxScore}
     let newScore = [...score];
     newScore[teamIndex] = newTeamScore;
     setScore(newScore);
@@ -316,7 +376,7 @@ const Quarter = ({index, score, setScore, gameScore, setGameScore}) => {
         >
           <ChickpeaImage teamScore={score[teamIndex]} index={index} />
 
-          {!isSinglePointQuarter(index) && score[teamIndex] === 20 && (
+          {!isSinglePointQuarter(index) && score[teamIndex] === maxScore && (
 
             <AddGamePointButton onPress={increaseGamePoint}>
               <AddGamePointText>Ustela Gehitu</AddGamePointText>
@@ -358,7 +418,7 @@ const MainView = styled.ImageBackground`
   flex-wrap: wrap;
 `;
 
-const ChickpeaksMiddleView = styled.View`
+const CenteredView = styled.View`
   position:absolute;
   width: 100%;
   height: 100%;
@@ -385,6 +445,7 @@ const QuarterElement = styled.View`
   border-left-width: ${props => props.borderLeft ? '3px' : '0px'};
   border-top-width: ${props => props.borderTop ? '3px' : '0px'};
   border-bottom: 3px dashed white;
+
 `;
 
 const Tap = styled.TouchableOpacity`
@@ -397,11 +458,9 @@ const Tap = styled.TouchableOpacity`
 
 const QuarterValueText = styled.Text`
   color: white;  
-  font-family: Vascan;
+  font-family: Kaxko;
   position: absolute;
   bottom: 10px;
-  font-style:italic;
-  font-weight: bold;
   font-size: 20px;
   opacity: .5;
   ${props => props.position}: 40px;
