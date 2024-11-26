@@ -55,7 +55,7 @@ const ResetModal = ({ modalVisible, setModalVisible, setScore, setGameScore }) =
           <Row>
             <ModalButton 
               onPress={() => { setScore([0, 0]) }}
-              title={'PUNTUAK'}
+              title={'TANTOAK'}
             />
             <ModalButton 
               onPress={() => { setGameScore([0, 0]) }}
