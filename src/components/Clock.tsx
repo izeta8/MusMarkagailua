@@ -36,9 +36,10 @@ const ClockText = styled.Text`
   color: white;
   position: absolute;
   opacity: .8;
-  bottom: 38 %;
+  bottom: 35%;
   transform: rotate(270deg);
   font-family: Kaxko;
+  font-size: 18px;
 `
 
 export default Clock;
