@@ -64,6 +64,7 @@ export default function PlaymatScreen(): React.JSX.Element {
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
   const [resetModalVisible, setResetModalVisible] = useState(false);
   const [maxScore, setMaxScore] = useState(20);  
+  const [loaded, setLoaded] = useState(false); // Nuevo estado para seguimiento de carga
 
   useEffect(() => {
 
@@ -103,6 +104,8 @@ export default function PlaymatScreen(): React.JSX.Element {
 
       } catch (error) {
         console.error("Error reading score:", error);
+      } finally {
+        setLoaded(true); // Indicamos que la carga ha finalizado
       }
     })();
 
@@ -117,11 +120,12 @@ export default function PlaymatScreen(): React.JSX.Element {
 
 
   useEffect(() => {
+    if (!loaded) return;
     (async () => {
       try {
-        const maxScoreJSON = {maxScore};
-        await AsyncStorage.setItem('maxScore', JSON.stringify(maxScoreJSON));
-        console.log("Max Score: ", maxScoreJSON.maxScore);
+        const maxScoreJSON = { maxScore };
+        await AsyncStorage.setItem("maxScore", JSON.stringify(maxScoreJSON));
+        console.log("Max Score saved: ", maxScoreJSON.maxScore);
       } catch (error) {
         console.error("Error saving the max score:", error);
       }
@@ -138,31 +142,33 @@ export default function PlaymatScreen(): React.JSX.Element {
 
   }, [maxScore]);
 
+  
   useEffect(() => {
-    
+    if (!loaded) return;
     (async () => {
       try {
-        const scoreJSON = {score};
-        await AsyncStorage.setItem('score', JSON.stringify(scoreJSON));
-        console.log("Score: ", scoreJSON.score);
+        const scoreJSON = { score };
+        await AsyncStorage.setItem("score", JSON.stringify(scoreJSON));
+        console.log("Score saved: ", scoreJSON.score);
       } catch (error) {
         console.error("Error saving the score:", error);
       }
     })();
-    
-  }, [score]);
+  }, [score, loaded]);
 
   useEffect(() => {
+    if (!loaded) return; 
     (async () => {
       try {
-        const gameScoreJSON = {gameScore};
-        await AsyncStorage.setItem('gameScore', JSON.stringify(gameScoreJSON));
-        console.log("Game Score: ", gameScoreJSON.gameScore);
+        const gameScoreJSON = { gameScore };
+        await AsyncStorage.setItem("gameScore", JSON.stringify(gameScoreJSON));
+        console.log("Game Score saved: ", gameScoreJSON.gameScore);
       } catch (error) {
         console.error("Error saving the game score:", error);
       }
     })();
-  }, [gameScore]);
+  }, [gameScore, loaded]); // Agrega 'loaded' como dependencia
+
 
   // ---------------------- //
   // -----   RENDER   ----- //
