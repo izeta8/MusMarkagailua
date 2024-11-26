@@ -188,7 +188,20 @@ export default function PlaymatScreen(): React.JSX.Element {
       </CenteredView>
 
       <Clock />
-      
+
+      <CenteredView>
+        <ConfigurationButton 
+          onPress={() => {setSettingsModalVisible(true)}}
+        />
+        <ResetButton 
+          onPress={() => {setResetModalVisible(true)}}
+        />
+      </CenteredView>
+
+      <CenteredView>
+        <ChickpeaksMiddle source={chickpeaksMiddle} />
+      </CenteredView>
+    
       <MainView source={playmatImage}>
 
         {[...Array(4)].map((element, index) => {
@@ -203,20 +216,8 @@ export default function PlaymatScreen(): React.JSX.Element {
                   />;
         })}
 
-        <CenteredView>
-          <ConfigurationButton 
-            onPress={() => {setSettingsModalVisible(true)}}
-          />
-          <ResetButton 
-            onPress={() => {setResetModalVisible(true)}}
-          />
-        </CenteredView>
-
-        <CenteredView>
-          <ChickpeaksMiddle source={chickpeaksMiddle} />
-        </CenteredView>
-      
       </MainView>
+
     </>
   );
 };
